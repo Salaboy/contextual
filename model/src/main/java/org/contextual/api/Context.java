@@ -1,6 +1,8 @@
 package org.contextual.api;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.contextual.api.listeners.ContextEventListener;
+import org.contextual.api.services.ExecutorService;
 
 import java.util.Collection;
 import java.util.List;
@@ -38,5 +40,7 @@ public interface Context {
 
     List<Class> getAvailableCommands();
 
-    void executeCommand(Command cmd);
+    @JsonIgnore
+    ExecutorService getExecutor();
+
 }

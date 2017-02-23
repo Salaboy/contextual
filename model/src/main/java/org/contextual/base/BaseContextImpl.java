@@ -1,5 +1,6 @@
 package org.contextual.base;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.contextual.api.Command;
 import org.contextual.api.Context;
 import org.contextual.api.Resource;
@@ -7,6 +8,7 @@ import org.contextual.api.ResourceType;
 import org.contextual.api.events.ResourceAddedEvent;
 import org.contextual.api.events.ResourceRemovedEvent;
 import org.contextual.api.listeners.ContextEventListener;
+import org.contextual.api.services.ExecutorService;
 
 import java.util.*;
 
@@ -23,6 +25,10 @@ public class BaseContextImpl implements Context {
     private List<ContextEventListener> listeners = new ArrayList<>();
     private List<ResourceType> supportedResourceTypes;
     private List<Class> commands;
+    // @TODO: the executor or a third component should be in charge of registering enviroments (process engine instance,
+    //      content service instance and endpoints. And then know how to delegate based on labels (similar to kubernetes) to
+    //      not pollute the commands with the environments information of where they need to be executed.
+    private ExecutorService executorService = new BaseExecutorService();
 
     public BaseContextImpl(String name, String domainId, List<ResourceType> supportedResourceTypes) {
         this.id = UUID.randomUUID().toString();
@@ -131,8 +137,8 @@ public class BaseContextImpl implements Context {
     }
 
     @Override
-    public void executeCommand(Command cmd) {
-        System.out.println("Executing CMD: " + cmd);
+    public ExecutorService getExecutor() {
+        return executorService;
     }
 
     @Override

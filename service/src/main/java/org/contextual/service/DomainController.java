@@ -113,7 +113,7 @@ public class DomainController {
             @PathVariable("contextId") final String contextId,
             @RequestBody(required = true) Command cmd ) {
 
-        domain.getContextById(contextId).executeCommand(cmd);
+        domain.getContextById(contextId).getExecutor().execute(cmd);
         return new ResponseEntity<Void>( HttpStatus.OK);
     }
 

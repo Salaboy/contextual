@@ -84,7 +84,7 @@ public class ContextualAPIModelTest {
 
         MockExecuteSomethingACommand mockExecuteSomethingACommand = new MockExecuteSomethingACommand("prop1", "prop2");
 
-        myContext.executeCommand(mockExecuteSomethingACommand);
+        myContext.getExecutor().execute(mockExecuteSomethingACommand);
 
 
     }
