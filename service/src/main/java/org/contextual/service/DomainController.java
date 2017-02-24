@@ -12,7 +12,9 @@ import org.contextual.api.Domain;
 import org.contextual.api.Resource;
 import org.contextual.base.BaseContextImpl;
 import org.contextual.base.BaseDomainImpl;
+import org.contextual.service.cmds.NewFileCommand;
 import org.contextual.service.cmds.StartProcessCommand;
+import org.contextual.service.impl.ExtendedCommandExecutorService;
 import org.contextual.service.listeners.RabbitMQContextEventListener;
 import org.contextual.service.listeners.RabbitMQDomainEventListener;
 import org.contextual.service.resources.DocumentResource;
@@ -60,8 +62,10 @@ public class DomainController {
         Context context = new BaseContextImpl(name, domain.getId(), domain.getSupportedResourceTypes());
         List<Class> cmds = new ArrayList<>();
         cmds.add( StartProcessCommand.class);
+        cmds.add( NewFileCommand.class);
         context.setUpAvailableCommands(cmds);
         context.addContextEventListener(contextEventListener);
+        context.setExecutorService(new ExtendedCommandExecutorService());
         domain.registerContext(context);
 
 
@@ -113,7 +117,7 @@ public class DomainController {
             @PathVariable("contextId") final String contextId,
             @RequestBody(required = true) Command cmd ) {
 
-        domain.getContextById(contextId).getExecutor().execute(cmd);
+        domain.getContextById(contextId).getExecutorService().execute(cmd);
         return new ResponseEntity<Void>( HttpStatus.OK);
     }
 

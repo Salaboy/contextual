@@ -2,6 +2,7 @@ package org.contextual.api;
 
 import org.contextual.api.listeners.ContextEventListener;
 import org.contextual.api.listeners.DomainEventListener;
+import org.contextual.api.tests.mocks.MockCommandExecutorService;
 import org.contextual.api.tests.mocks.MockResourceA;
 import org.contextual.api.tests.mocks.MockResourceB;
 import org.contextual.api.tests.mocks.cmds.MockExecuteSomethingACommand;
@@ -14,10 +15,9 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Future;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 
 /**
@@ -44,6 +44,7 @@ public class ContextualAPIModelTest {
 
         MockContextEventListener mockContextEventListener = new MockContextEventListener();
         myContext.addContextEventListener(mockContextEventListener);
+        myContext.setExecutorService(new MockCommandExecutorService());
         myDomain.registerContext(myContext);
 
         Context mySecondContext = new BaseContextImpl("second context", myDomain.getId(), myDomain.getSupportedResourceTypes());
@@ -84,8 +85,11 @@ public class ContextualAPIModelTest {
 
         MockExecuteSomethingACommand mockExecuteSomethingACommand = new MockExecuteSomethingACommand("prop1", "prop2");
 
-        myContext.getExecutor().execute(mockExecuteSomethingACommand);
+        Future execution = myContext.getExecutorService().execute(mockExecuteSomethingACommand);
 
+        assertNotNull(execution);
+
+        assertTrue(execution.isDone());
 
     }
 

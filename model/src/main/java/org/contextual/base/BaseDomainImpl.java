@@ -16,6 +16,8 @@ public class BaseDomainImpl implements Domain {
 
     private String id;
     private String name;
+
+    // @TODO: evaluate hazelcast for eviction maps and cluster/distributed sync
     private Map<String, Context> contexts = new HashMap<>();
     private List<DomainEventListener> listeners = new ArrayList<>();
     private List<ResourceType> supportedResourceTypes = new ArrayList<>();
