@@ -1,6 +1,7 @@
 package org.contextual.base;
 
 import org.contextual.api.Command;
+import org.contextual.api.Context;
 import org.contextual.api.events.AfterCommandExecutedEvent;
 import org.contextual.api.events.BeforeCommandExecutedEvent;
 import org.contextual.api.listeners.ExecutorEventListener;
@@ -18,13 +19,13 @@ public abstract class BaseCommandExecutorService implements CommandExecutorServi
     private List<ExecutorEventListener> listeners = new ArrayList<>();
 
     @Override
-    public Future execute(final Command cmd) {
+    public Future execute(final Command cmd, Context context) {
 
         for (ExecutorEventListener l : listeners) {
             l.beforeCommandExecuted(new BeforeCommandExecutedEvent(cmd));
         }
 
-        Future future = executeTask(cmd);
+        Future future = executeTask(cmd, context);
 
         for (ExecutorEventListener l : listeners) {
             l.afterCommandExecuted(new AfterCommandExecutedEvent(cmd));
@@ -33,5 +34,5 @@ public abstract class BaseCommandExecutorService implements CommandExecutorServi
         return future;
     }
 
-    public abstract Future executeTask(final Command cmd);
+    public abstract Future executeTask(final Command cmd, final Context context);
 }

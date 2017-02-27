@@ -117,7 +117,10 @@ public class DomainController {
             @PathVariable("contextId") final String contextId,
             @RequestBody(required = true) Command cmd ) {
 
-        domain.getContextById(contextId).getExecutorService().execute(cmd);
+        Context contextById = domain.getContextById(contextId);
+
+        contextById.getExecutorService().execute(cmd, contextById);
+
         return new ResponseEntity<Void>( HttpStatus.OK);
     }
 

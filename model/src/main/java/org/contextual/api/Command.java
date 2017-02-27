@@ -11,4 +11,6 @@ import java.util.Collection;
 public interface Command {
 
     Collection<ResourceType> applicableTo();
+
+    Collection<Resource> getResources();
 }

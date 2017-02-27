@@ -1,6 +1,7 @@
 package org.contextual.api.services;
 
 import org.contextual.api.Command;
+import org.contextual.api.Context;
 
 import java.util.concurrent.Future;
 
@@ -9,6 +10,6 @@ import java.util.concurrent.Future;
  */
 public interface CommandExecutorService {
 
-    Future execute(Command cmd);
+    Future execute(Command cmd, Context context);
 
 }

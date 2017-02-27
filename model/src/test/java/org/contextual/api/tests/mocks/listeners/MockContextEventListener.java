@@ -1,10 +1,7 @@
 package org.contextual.api.tests.mocks.listeners;
 
 import org.contextual.api.Event;
-import org.contextual.api.events.ContextDestroyedEvent;
-import org.contextual.api.events.ContextRegisteredEvent;
-import org.contextual.api.events.ResourceAddedEvent;
-import org.contextual.api.events.ResourceRemovedEvent;
+import org.contextual.api.events.*;
 import org.contextual.base.listeners.BaseContextEventListener;
 import org.contextual.base.listeners.BaseDomainEventListener;
 
@@ -31,6 +28,16 @@ public class MockContextEventListener extends BaseContextEventListener {
     @Override
     public void onResourceRemoved(ResourceRemovedEvent rre) {
         events.add(rre);
+    }
+
+    @Override
+    public void onResourceInstanceAdded(ResourceInstanceAddedEvent riae) {
+        events.add(riae);
+    }
+
+    @Override
+    public void onResourceInstanceRemoved(ResourceInstanceRemovedEvent rire) {
+        events.add(rire);
     }
 
     public List<Event> getEvents() {

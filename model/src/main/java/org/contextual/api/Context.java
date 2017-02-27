@@ -30,6 +30,14 @@ public interface Context {
 
     void removeResource(String resourceId);
 
+    Collection<ResourceInstance> getResourceInstances();
+
+    Collection<ResourceInstance> getResourceInstancesByType(ResourceType type);
+
+    void addResourceInstance(ResourceInstance resourceInstance);
+
+    void removeResourceInstance(String resourceInstanceId);
+
     void addContextEventListener(ContextEventListener contextEventListener);
 
     void clearContextEventListeners();

@@ -13,6 +13,7 @@ import org.contextual.base.BaseDomainImpl;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Future;
@@ -26,7 +27,7 @@ import static org.junit.Assert.*;
 public class ContextualAPIModelTest {
 
     @Test
-    public void testAPIModelFromConsumer() {
+    public void testAPIModelFromConsumer() throws InterruptedException {
 
 
         Domain myDomain = new BaseDomainImpl("my domain");
@@ -52,7 +53,8 @@ public class ContextualAPIModelTest {
         mySecondContext.addContextEventListener(secondMockContextEventListener);
         myDomain.registerContext(mySecondContext);
 
-        myContext.addResource(new MockResourceA("myfile.a"));
+        MockResourceA mockResourceA = new MockResourceA("myfile.a");
+        myContext.addResource(mockResourceA);
 
         myContext.addResource(new MockResourceB("myfile2.b"));
 
@@ -83,18 +85,91 @@ public class ContextualAPIModelTest {
 
         assertEquals(MockExecuteSomethingACommand.class, commands.get(0)  );
 
-        MockExecuteSomethingACommand mockExecuteSomethingACommand = new MockExecuteSomethingACommand("prop1", "prop2");
+        Resource resource = myContext.getResource(mockResourceA.getId());
 
-        Future execution = myContext.getExecutorService().execute(mockExecuteSomethingACommand);
+        MockExecuteSomethingACommand mockExecuteSomethingACommand = new MockExecuteSomethingACommand(resource, "prop1", "prop2");
+
+        // @TODO: nasty API here.. we shouldn't send my context as parameter.. due the fact that myContext is getting the executor service
+        //          it should be able to get the reference from itself. But now the Executor is decoupled from the Context.. which might be good
+        Future execution = myContext.getExecutorService().execute(mockExecuteSomethingACommand, myContext);
 
         assertNotNull(execution);
 
+        while(!execution.isDone() && !execution.isCancelled()){
+            System.out.println("Sleeping until task gets executed ...");
+            Thread.sleep(100);
+        }
+
         assertTrue(execution.isDone());
+
+
 
     }
 
 
+    @Test
+    public void testAPIModelPlusRuntimeInstance() throws InterruptedException {
+
+        // Creating a Domain
+        Domain myDomain = new BaseDomainImpl("my domain");
+
+        myDomain.addSupportedResourceType(MockResourceA.TYPE_INSTANCE);
+
+        DomainEventListener mockDomainEventListener = new MockDomainEventListener();
+        myDomain.addDomainEventListener(mockDomainEventListener);
+
+
+
+        // Creating a Context
+        Context myContext = new BaseContextImpl("first context", myDomain.getId(), myDomain.getSupportedResourceTypes());
+
+        MockContextEventListener mockContextEventListener = new MockContextEventListener();
+        myContext.addContextEventListener(mockContextEventListener);
+        myContext.setExecutorService(new MockCommandExecutorService());
+        myDomain.registerContext(myContext);
+
+        MockResourceA mockResourceA = new MockResourceA("myfile.a");
+        myContext.addResource(mockResourceA);
+
+        assertEquals(1, myContext.getResources().size());
+
+        List<Class> cmds = new ArrayList<>();
+        cmds.add( MockExecuteSomethingACommand.class);
+        myContext.setUpAvailableCommands(cmds);
+
+        List<Class> commands = myContext.getAvailableCommands();
+        assertEquals(1, commands.size());
+
+        assertEquals(MockExecuteSomethingACommand.class, commands.get(0)  );
+
+        // Creating instance of Supported Command
+        MockExecuteSomethingACommand mockExecuteSomethingACommand = new MockExecuteSomethingACommand(mockResourceA, "prop1", "prop2");
+
+        // Executing command
+        // @TODO: nasty API here.. we shouldn't send my context as parameter.. due the fact that myContext is getting the executor service
+        //          it should be able to get the reference from itself. But now the Executor is decoupled from the Context.. which might be good
+        Future execution = myContext.getExecutorService().execute(mockExecuteSomethingACommand, myContext);
+
+        assertNotNull(execution);
+
+        while(!execution.isDone() && !execution.isCancelled()){
+            System.out.println("Sleeping until task gets executed ...");
+            Thread.sleep(100);
+        }
+        assertTrue(execution.isDone());
+
+        Collection<ResourceInstance> instances = myContext.getResourceInstances();
+
+        assertEquals(1, instances.size());
+
+
+
+    }
+
     // @TODO: test for removals and removal events
+
+
+
     private class DummyResource implements Resource{
         @Override
         public String getId() {

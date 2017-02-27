@@ -2,8 +2,11 @@ package org.contextual.base;
 
 import org.contextual.api.Context;
 import org.contextual.api.Resource;
+import org.contextual.api.ResourceInstance;
 import org.contextual.api.ResourceType;
 import org.contextual.api.events.ResourceAddedEvent;
+import org.contextual.api.events.ResourceInstanceAddedEvent;
+import org.contextual.api.events.ResourceInstanceRemovedEvent;
 import org.contextual.api.events.ResourceRemovedEvent;
 import org.contextual.api.listeners.ContextEventListener;
 import org.contextual.api.services.CommandExecutorService;
@@ -20,12 +23,18 @@ public class BaseContextImpl implements Context {
     private String domainId;
     private List<Resource> resources = new ArrayList<>();
     private Map<ResourceType, List<Resource>> resourcesByType = new HashMap<>();
+    private List<ResourceInstance> resourceInstances = new ArrayList<>();
+    private Map<ResourceType, List<ResourceInstance>> resourceInstancesByType = new HashMap<>();
     private List<ContextEventListener> listeners = new ArrayList<>();
     private List<ResourceType> supportedResourceTypes;
     private List<Class> commands;
+
+
     // @TODO: the executor or a third component should be in charge of registering enviroments (process engine instance,
     //      content service instance and endpoints. And then know how to delegate based on labels (similar to kubernetes) to
     //      not pollute the commands with the environments information of where they need to be executed.
+
+
     private CommandExecutorService executorService;
 
     public BaseContextImpl(String name, String domainId, List<ResourceType> supportedResourceTypes) {
@@ -57,7 +66,19 @@ public class BaseContextImpl implements Context {
         return resources;
     }
 
+    @Override
+    public Collection<ResourceInstance> getResourceInstances() {
+        return resourceInstances;
+    }
 
+    @Override
+    public Collection<ResourceInstance> getResourceInstancesByType(ResourceType type) {
+        List<ResourceInstance> resources = resourceInstancesByType.get(type);
+        if (resources == null) {
+            return Collections.EMPTY_LIST;
+        }
+        return resources;
+    }
 
     @Override
     public void addResource(Resource resource) {
@@ -74,6 +95,38 @@ public class BaseContextImpl implements Context {
         } else {
             throw new IllegalStateException("Resource Type: " + resource.getResourceType()
                     + "not supported!. Supported Resource Types: " + supportedResourceTypes);
+        }
+    }
+
+    @Override
+    public void addResourceInstance(ResourceInstance resourceInstance) {
+        if (supportedResourceTypes.contains(resourceInstance.getResource().getResourceType())) {
+            List<ResourceInstance> resourcesBySpecificType = resourceInstancesByType.get(resourceInstance.getResource().getResourceType());
+            if (resourcesBySpecificType == null) {
+                resourceInstancesByType.put(resourceInstance.getResource().getResourceType(), new ArrayList<>());
+            }
+            resourceInstancesByType.get(resourceInstance.getResource().getResourceType()).add(resourceInstance);
+            this.resourceInstances.add(resourceInstance);
+            for (ContextEventListener l : listeners) {
+                l.onResourceInstanceAdded(new ResourceInstanceAddedEvent(resourceInstance.getId(), resourceInstance.getResource()));
+            }
+        } else {
+            throw new IllegalStateException("ResourceInstance Type: " + resourceInstance.getResource().getResourceType()
+                    + "not supported!. Supported ResourceInstance Types: " + supportedResourceTypes);
+        }
+    }
+
+    @Override
+    public void removeResourceInstance(String resourceInstanceId) {
+        ResourceInstance remove = null;
+        for (ResourceInstance r : resourceInstances) {
+            if (r.getId().equals(resourceInstanceId)) {
+                remove = r;
+            }
+        }
+        resourceInstances.remove(remove);
+        for (ContextEventListener l : listeners) {
+            l.onResourceInstanceRemoved(new ResourceInstanceRemovedEvent(remove.getId(), remove.getResource()));
         }
     }
 

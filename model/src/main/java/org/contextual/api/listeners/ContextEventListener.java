@@ -1,10 +1,8 @@
 package org.contextual.api.listeners;
 
 import org.contextual.api.EventListener;
-import org.contextual.api.events.ContextDestroyedEvent;
-import org.contextual.api.events.ContextRegisteredEvent;
-import org.contextual.api.events.ResourceAddedEvent;
-import org.contextual.api.events.ResourceRemovedEvent;
+import org.contextual.api.ResourceInstance;
+import org.contextual.api.events.*;
 
 /**
  * Created by msalatino on 21/02/2017.
@@ -13,4 +11,8 @@ public interface ContextEventListener extends EventListener {
     void onResourceAdded(ResourceAddedEvent rae);
 
     void onResourceRemoved(ResourceRemovedEvent rre);
+
+    void onResourceInstanceAdded(ResourceInstanceAddedEvent rae);
+
+    void onResourceInstanceRemoved(ResourceInstanceRemovedEvent rre);
 }
