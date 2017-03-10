@@ -2,6 +2,7 @@ package org.contextual.api.services;
 
 import org.contextual.api.Command;
 import org.contextual.api.Context;
+import org.contextual.api.listeners.ExecutorEventListener;
 
 import java.util.concurrent.Future;
 
@@ -11,5 +12,9 @@ import java.util.concurrent.Future;
 public interface CommandExecutorService {
 
     Future execute(Command cmd, Context context);
+
+    void addExecutorEventListener(ExecutorEventListener executorEventListener);
+
+    void clearExecutorEventListeners();
 
 }

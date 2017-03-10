@@ -5,6 +5,7 @@ import org.contextual.api.Resource;
 import org.contextual.api.tests.mocks.MockResourceA;
 import org.contextual.api.tests.mocks.MockResourceInstanceA;
 import org.contextual.api.tests.mocks.cmds.MockExecuteSomethingACommand;
+import org.contextual.api.tests.mocks.services.MockServiceA;
 
 import java.util.Iterator;
 import java.util.concurrent.Callable;
@@ -31,7 +32,7 @@ public class CreateResourceInstanceATask implements Callable<Long> {
         while(iterator.hasNext()){
             Resource next = iterator.next();
             if(next instanceof MockResourceA) {
-
+                ((MockServiceA)context.getServicesByType(MockServiceA.TYPE_INSTANCE).iterator().next()).echo(">>> Sending data from the Task ... ");
                 MockResourceInstanceA mockResourceInstanceA = new MockResourceInstanceA(next);
                 context.addResourceInstance(mockResourceInstanceA);
             }

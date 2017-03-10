@@ -22,6 +22,7 @@ public class ExtendedCommandExecutorService extends BaseCommandExecutorService {
         ExecutorService executor = Executors.newFixedThreadPool(1);
         // @TODO: implement a nice selection
         if(cmd instanceof StartProcessCommand) {
+
             return executor.submit(new StartProcessTask((StartProcessCommand)cmd, context));
         }else if(cmd instanceof NewFileCommand) {
             return executor.submit(new NewFileTask((NewFileCommand)cmd, context));

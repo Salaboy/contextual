@@ -34,5 +34,15 @@ public abstract class BaseCommandExecutorService implements CommandExecutorServi
         return future;
     }
 
+    @Override
+    public void addExecutorEventListener(ExecutorEventListener executorEventListener) {
+        listeners.add(executorEventListener);
+    }
+
+    @Override
+    public void clearExecutorEventListeners() {
+        listeners.clear();
+    }
+
     public abstract Future executeTask(final Command cmd, final Context context);
 }

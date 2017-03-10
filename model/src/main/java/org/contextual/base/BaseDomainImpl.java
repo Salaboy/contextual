@@ -1,26 +1,31 @@
 package org.contextual.base;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import org.contextual.api.Context;
 import org.contextual.api.Domain;
 import org.contextual.api.ResourceType;
 import org.contextual.api.events.ContextDestroyedEvent;
 import org.contextual.api.events.ContextRegisteredEvent;
 import org.contextual.api.listeners.DomainEventListener;
+import org.contextual.api.services.ServiceType;
 
 import java.util.*;
 
 /**
  * Created by msalatino on 21/02/2017.
  */
+
 public class BaseDomainImpl implements Domain {
 
     private String id;
     private String name;
+    private List<ResourceType> supportedResourceTypes = new ArrayList<>();
+    private List<ServiceType> supportedServiceTypes = new ArrayList<>();
 
     // @TODO: evaluate hazelcast for eviction maps and cluster/distributed sync
     private Map<String, Context> contexts = new HashMap<>();
     private List<DomainEventListener> listeners = new ArrayList<>();
-    private List<ResourceType> supportedResourceTypes = new ArrayList<>();
+
 
     public BaseDomainImpl(String name) {
         this.id = UUID.randomUUID().toString();
@@ -97,5 +102,15 @@ public class BaseDomainImpl implements Domain {
     @Override
     public void addSupportedResourceType(ResourceType type){
         supportedResourceTypes.add(type);
+    }
+
+    @Override
+    public List<ServiceType> getSupportedServiceTypes() {
+        return supportedServiceTypes;
+    }
+
+    @Override
+    public void addSupportedServiceType(ServiceType type) {
+        supportedServiceTypes.add(type);
     }
 }

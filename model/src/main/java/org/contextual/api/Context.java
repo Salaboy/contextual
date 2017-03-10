@@ -1,22 +1,25 @@
 package org.contextual.api;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.*;
 import org.contextual.api.listeners.ContextEventListener;
 import org.contextual.api.services.CommandExecutorService;
+import org.contextual.api.services.Service;
+import org.contextual.api.services.ServiceType;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by msalatino on 21/02/2017.
  */
-public interface Context {
 
+public interface Context {
     String getId();
 
     String getName();
 
-    String getDomainId();
+    Domain getDomain();
 
     void setName(String name);
 
@@ -42,11 +45,17 @@ public interface Context {
 
     void clearContextEventListeners();
 
-    List<ResourceType> getSupportedResourceTypes();
-
     void setUpAvailableCommands(List<Class> commands);
 
-    List<Class> getAvailableCommands();
+    Collection<Class> getAvailableCommands();
+
+    void addService(ServiceType serviceType, Service service);
+
+    Map<ServiceType, Collection<Service>> getServices();
+
+    Collection<Service> getServicesByType(ServiceType serviceType);
+
+    void removeService(String serviceId);
 
     @JsonIgnore
     CommandExecutorService getExecutorService();

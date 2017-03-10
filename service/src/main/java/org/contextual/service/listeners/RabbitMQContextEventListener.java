@@ -27,21 +27,21 @@ public class RabbitMQContextEventListener implements ContextEventListener {
 
     @Override
     public void onResourceAdded(ResourceAddedEvent rae) {
-        rabbitTemplate.convertAndSend(System.getProperty("QUEUE_NAME", "context-queue"), "Resource Added: " + rae.getResourceName());
+        rabbitTemplate.convertAndSend(System.getProperty("QUEUE_NAME", "context-queue"), ">>> Context: Resource Added: " + rae.getResourceName());
     }
 
     @Override
     public void onResourceRemoved(ResourceRemovedEvent rre) {
-        rabbitTemplate.convertAndSend(System.getProperty("QUEUE_NAME", "context-queue"), "Resource Removed: " + rre.getResourceName());
+        rabbitTemplate.convertAndSend(System.getProperty("QUEUE_NAME", "context-queue"), ">>> Context: Resource Removed: " + rre.getResourceName());
     }
 
     @Override
     public void onResourceInstanceAdded(ResourceInstanceAddedEvent riae) {
-        rabbitTemplate.convertAndSend(System.getProperty("QUEUE_NAME", "context-queue"), "ResourceInstance Added: " + riae.getResourceInstanceId() + " - Resource: " + riae.getResource());
+        rabbitTemplate.convertAndSend(System.getProperty("QUEUE_NAME", "context-queue"), ">>> Context: ResourceInstance Added: " + riae.getResourceInstanceId() + " - Resource: " + riae.getResource());
     }
 
     @Override
     public void onResourceInstanceRemoved(ResourceInstanceRemovedEvent rire) {
-        rabbitTemplate.convertAndSend(System.getProperty("QUEUE_NAME", "context-queue"), "ResourceInstance Removed: " + rire.getResourceInstanceId() + " - Resource: " + rire.getResource());
+        rabbitTemplate.convertAndSend(System.getProperty("QUEUE_NAME", "context-queue"), ">>> Context: ResourceInstance Removed: " + rire.getResourceInstanceId() + " - Resource: " + rire.getResource());
     }
 }

@@ -1,6 +1,5 @@
 package org.contextual.api;
 
-import org.contextual.api.listeners.ContextEventListener;
 import org.contextual.api.listeners.DomainEventListener;
 import org.contextual.api.tests.mocks.MockCommandExecutorService;
 import org.contextual.api.tests.mocks.MockResourceA;
@@ -8,6 +7,9 @@ import org.contextual.api.tests.mocks.MockResourceB;
 import org.contextual.api.tests.mocks.cmds.MockExecuteSomethingACommand;
 import org.contextual.api.tests.mocks.listeners.MockContextEventListener;
 import org.contextual.api.tests.mocks.listeners.MockDomainEventListener;
+import org.contextual.api.tests.mocks.listeners.MockExecutorEventListener;
+import org.contextual.base.BaseEndpointImpl;
+import org.contextual.api.tests.mocks.services.MockServiceA;
 import org.contextual.base.BaseContextImpl;
 import org.contextual.base.BaseDomainImpl;
 import org.junit.Test;
@@ -33,11 +35,12 @@ public class ContextualAPIModelTest {
         Domain myDomain = new BaseDomainImpl("my domain");
         myDomain.addSupportedResourceType(MockResourceA.TYPE_INSTANCE);
         myDomain.addSupportedResourceType(MockResourceB.TYPE_INSTANCE);
+        myDomain.addSupportedServiceType(MockServiceA.TYPE_INSTANCE);
 
         DomainEventListener mockDomainEventListener = new MockDomainEventListener();
         myDomain.addDomainEventListener(mockDomainEventListener);
 
-        Context myContext = new BaseContextImpl("first context", myDomain.getId(), myDomain.getSupportedResourceTypes());
+        Context myContext = new BaseContextImpl("first context", myDomain);
 
         List<Class> cmds = new ArrayList<>();
         cmds.add( MockExecuteSomethingACommand.class);
@@ -45,10 +48,18 @@ public class ContextualAPIModelTest {
 
         MockContextEventListener mockContextEventListener = new MockContextEventListener();
         myContext.addContextEventListener(mockContextEventListener);
-        myContext.setExecutorService(new MockCommandExecutorService());
+
+        myContext.addService(MockServiceA.TYPE_INSTANCE, new MockServiceA("mock service",
+                "this is my mock service",
+                new BaseEndpointImpl("localhost", 8080, "my-app")));
+
+        MockCommandExecutorService mockCommandExecutorService = new MockCommandExecutorService();
+        MockExecutorEventListener mockExecutorEventListener = new MockExecutorEventListener();
+        mockCommandExecutorService.addExecutorEventListener(mockExecutorEventListener);
+        myContext.setExecutorService(mockCommandExecutorService);
         myDomain.registerContext(myContext);
 
-        Context mySecondContext = new BaseContextImpl("second context", myDomain.getId(), myDomain.getSupportedResourceTypes());
+        Context mySecondContext = new BaseContextImpl("second context", myDomain);
         MockContextEventListener secondMockContextEventListener = new MockContextEventListener();
         mySecondContext.addContextEventListener(secondMockContextEventListener);
         myDomain.registerContext(mySecondContext);
@@ -80,10 +91,10 @@ public class ContextualAPIModelTest {
         assertEquals(2, mockContextEventListener.getEvents().size());
         assertEquals(1, secondMockContextEventListener.getEvents().size());
 
-        List<Class> commands = myContext.getAvailableCommands();
+        Collection<Class> commands = myContext.getAvailableCommands();
         assertEquals(1, commands.size());
 
-        assertEquals(MockExecuteSomethingACommand.class, commands.get(0)  );
+        assertEquals(MockExecuteSomethingACommand.class, commands.iterator().next()  );
 
         Resource resource = myContext.getResource(mockResourceA.getId());
 
@@ -102,6 +113,8 @@ public class ContextualAPIModelTest {
 
         assertTrue(execution.isDone());
 
+        assertEquals(2, mockExecutorEventListener.getEvents().size());
+
 
 
     }
@@ -117,19 +130,26 @@ public class ContextualAPIModelTest {
 
         DomainEventListener mockDomainEventListener = new MockDomainEventListener();
         myDomain.addDomainEventListener(mockDomainEventListener);
-
+        myDomain.addSupportedServiceType(MockServiceA.TYPE_INSTANCE);
 
 
         // Creating a Context
-        Context myContext = new BaseContextImpl("first context", myDomain.getId(), myDomain.getSupportedResourceTypes());
+        Context myContext = new BaseContextImpl("first context", myDomain);
 
         MockContextEventListener mockContextEventListener = new MockContextEventListener();
         myContext.addContextEventListener(mockContextEventListener);
-        myContext.setExecutorService(new MockCommandExecutorService());
+        MockCommandExecutorService mockCommandExecutorService = new MockCommandExecutorService();
+        MockExecutorEventListener mockExecutorEventListener = new MockExecutorEventListener();
+        mockCommandExecutorService.addExecutorEventListener(mockExecutorEventListener);
+        myContext.setExecutorService(mockCommandExecutorService);
         myDomain.registerContext(myContext);
 
         MockResourceA mockResourceA = new MockResourceA("myfile.a");
         myContext.addResource(mockResourceA);
+
+        myContext.addService(MockServiceA.TYPE_INSTANCE, new MockServiceA("mock service",
+                "this is my mock service",
+                new BaseEndpointImpl("localhost", 8080, "my-app")));
 
         assertEquals(1, myContext.getResources().size());
 
@@ -137,10 +157,10 @@ public class ContextualAPIModelTest {
         cmds.add( MockExecuteSomethingACommand.class);
         myContext.setUpAvailableCommands(cmds);
 
-        List<Class> commands = myContext.getAvailableCommands();
+        Collection<Class> commands = myContext.getAvailableCommands();
         assertEquals(1, commands.size());
 
-        assertEquals(MockExecuteSomethingACommand.class, commands.get(0)  );
+        assertEquals(MockExecuteSomethingACommand.class, commands.iterator().next()  );
 
         // Creating instance of Supported Command
         MockExecuteSomethingACommand mockExecuteSomethingACommand = new MockExecuteSomethingACommand(mockResourceA, "prop1", "prop2");
@@ -162,6 +182,7 @@ public class ContextualAPIModelTest {
 
         assertEquals(1, instances.size());
 
+        assertEquals(2, mockExecutorEventListener.getEvents().size());
 
 
     }

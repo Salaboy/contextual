@@ -27,11 +27,11 @@ public class RabbitMQDomainEventListener implements DomainEventListener {
 
     @Override
     public void onContextRegistered(ContextRegisteredEvent cre) {
-        rabbitTemplate.convertAndSend(System.getProperty("QUEUE_NAME", "domain-queue"), "Context Registered: " + cre.getContextName());
+        rabbitTemplate.convertAndSend(System.getProperty("QUEUE_NAME", "domain-queue"), ">>> Domain: Context Registered: " + cre.getContextName());
     }
 
     @Override
     public void onContextDestroyed(ContextDestroyedEvent cde) {
-        rabbitTemplate.convertAndSend(System.getProperty("QUEUE_NAME", "domain-queue"), "Context Destroyed: " + cde.getContextName());
+        rabbitTemplate.convertAndSend(System.getProperty("QUEUE_NAME", "domain-queue"), ">>> Domain: Context Destroyed: " + cde.getContextName());
     }
 }
