@@ -2,7 +2,7 @@ package org.contextual.service.tasks;
 
 import org.contextual.api.Context;
 import org.contextual.service.cmds.StartProcessCommand;
-import org.contextual.service.resources.ProcessResourceInstance;
+import org.contextual.service.resources.internal.ProcessModelInstance;
 import org.contextual.service.services.BPMService;
 
 import java.util.concurrent.Callable;
@@ -33,7 +33,7 @@ public class StartProcessTask implements Callable<Long> {
                 .iterator().next().getEndpoint());
 
 
-        context.addResourceInstance(new ProcessResourceInstance(cmd.getResources().iterator().next()));
+        context.addModelInstance(new ProcessModelInstance(cmd.getModels().iterator().next()));
         return null;
     }
 }

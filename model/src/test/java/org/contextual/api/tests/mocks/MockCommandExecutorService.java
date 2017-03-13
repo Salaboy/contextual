@@ -2,9 +2,8 @@ package org.contextual.api.tests.mocks;
 
 import org.contextual.api.Command;
 import org.contextual.api.Context;
-import org.contextual.api.services.CommandExecutorService;
 import org.contextual.api.tests.mocks.cmds.MockExecuteSomethingACommand;
-import org.contextual.api.tests.mocks.tasks.CreateResourceInstanceATask;
+import org.contextual.api.tests.mocks.tasks.CreateModelInstanceATask;
 import org.contextual.base.BaseCommandExecutorService;
 
 import java.util.concurrent.*;
@@ -18,7 +17,7 @@ public class MockCommandExecutorService extends BaseCommandExecutorService {
         ExecutorService executor = Executors.newFixedThreadPool(1);
         // @TODO: implement a nice selection
         if(cmd instanceof MockExecuteSomethingACommand) {
-            return executor.submit(new CreateResourceInstanceATask((MockExecuteSomethingACommand)cmd, context));
+            return executor.submit(new CreateModelInstanceATask((MockExecuteSomethingACommand)cmd, context));
         }
         return null;
     }

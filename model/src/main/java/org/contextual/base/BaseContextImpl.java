@@ -1,15 +1,20 @@
 package org.contextual.base;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import org.contextual.api.*;
 import org.contextual.api.events.ResourceAddedEvent;
-import org.contextual.api.events.ResourceInstanceAddedEvent;
-import org.contextual.api.events.ResourceInstanceRemovedEvent;
+import org.contextual.api.events.ModelInstanceAddedEvent;
+import org.contextual.api.events.ModelInstanceRemovedEvent;
 import org.contextual.api.events.ResourceRemovedEvent;
 import org.contextual.api.listeners.ContextEventListener;
 import org.contextual.api.services.CommandExecutorService;
 import org.contextual.api.services.Service;
 import org.contextual.api.services.ServiceType;
+import org.contextual.api.utils.IdGenerator;
+import org.contextual.api.utils.MyCustomObjectIdResolver;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,17 +26,21 @@ public class BaseContextImpl implements Context {
 
     private String id;
     private String name;
+
+//    @JsonIdentityInfo(generator = MyCustomObjectIdResolver.class)
+//    @JsonIdentityReference(alwaysAsId = true)
+    @JsonIgnore
     private Domain domain;
-    private Collection<Resource> resources = new ArrayList<>();
+    private Collection<Model> models = new ArrayList<>();
     private Map<ServiceType, Collection<Service>> services = new ConcurrentHashMap<>();
 
     // Cache for search only
-    private Map<ResourceType, Collection<Resource>> resourcesByType = new ConcurrentHashMap<>();
-    private Map<ResourceType, Collection<ResourceInstance>> resourceInstancesByType = new ConcurrentHashMap<>();
+    private Map<ModelType, Collection<Model>> modelsByType = new ConcurrentHashMap<>();
+    private Map<ModelType, Collection<ModelInstance>> modelInstancesByType = new ConcurrentHashMap<>();
 
     // Runtime
     private Collection<ContextEventListener> listeners = new ArrayList<>();
-    private Collection<ResourceInstance> resourceInstances = new ArrayList<>();
+    private Collection<ModelInstance> modelInstances = new ArrayList<>();
     private Collection<Class> commands;
 
 
@@ -43,7 +52,7 @@ public class BaseContextImpl implements Context {
     private CommandExecutorService executorService;
 
     public BaseContextImpl(String name, Domain domain) {
-        this.id = UUID.randomUUID().toString();
+        this.id = IdGenerator.generateIdForEntity("context");
         this.name = name;
         this.domain = domain;
     }
@@ -53,103 +62,101 @@ public class BaseContextImpl implements Context {
         return id;
     }
 
-    @Override
-    public Collection<Resource> getResources() {
-        return resources;
+    public Collection<Model> getModels() {
+        return models;
     }
 
     @Override
-    public Collection<Resource> getResourcesByType(ResourceType type) {
-        Collection<Resource> resources = resourcesByType.get(type);
-        if (resources == null) {
+    public Collection<Model> getModelsByType(ModelType type) {
+        Collection<Model> models = modelsByType.get(type);
+        if (models == null) {
             return Collections.EMPTY_LIST;
         }
-        return resources;
+        return models;
+    }
+
+    public Collection<ModelInstance> getModelInstances() {
+        return modelInstances;
     }
 
     @Override
-    public Collection<ResourceInstance> getResourceInstances() {
-        return resourceInstances;
-    }
-
-    @Override
-    public Collection<ResourceInstance> getResourceInstancesByType(ResourceType type) {
-        Collection<ResourceInstance> resources = resourceInstancesByType.get(type);
-        if (resources == null) {
+    public Collection<ModelInstance> getModelInstancesByType(ModelType type) {
+        Collection<ModelInstance> modelInstances = modelInstancesByType.get(type);
+        if (modelInstances == null) {
             return Collections.EMPTY_LIST;
         }
-        return resources;
+        return modelInstances;
     }
 
     @Override
-    public void addResource(Resource resource) {
-        if (domain.getSupportedResourceTypes().contains(resource.getResourceType())) {
-            Collection<Resource> resourcesBySpecificType = resourcesByType.get(resource.getResourceType());
-            if (resourcesBySpecificType == null) {
-                resourcesByType.put(resource.getResourceType(), new ArrayList<>());
+    public void addModel(Model model) {
+        if (domain.getSupportedModelTypes().contains(model.getModelType())) {
+            Collection<Model> modelsBySpecificType = modelsByType.get(model.getModelType());
+            if (modelsBySpecificType == null) {
+                modelsByType.put(model.getModelType(), new ArrayList<>());
             }
-            resourcesByType.get(resource.getResourceType()).add(resource);
-            this.resources.add(resource);
+            modelsByType.get(model.getModelType()).add(model);
+            this.models.add(model);
             for (ContextEventListener l : listeners) {
-                l.onResourceAdded(new ResourceAddedEvent(resource.getName()));
+                l.onResourceAdded(new ResourceAddedEvent(model.getName()));
             }
         } else {
-            throw new IllegalStateException("Resource Type: " + resource.getResourceType()
-                    + "not supported!. Supported Resource Types: " + domain.getSupportedResourceTypes());
+            throw new IllegalStateException("Model Type: " + model.getModelType()
+                    + "not supported!. Supported Model Types: " + domain.getSupportedModelTypes());
         }
     }
 
     @Override
-    public void addResourceInstance(ResourceInstance resourceInstance) {
-        if (domain.getSupportedResourceTypes().contains(resourceInstance.getResource().getResourceType())) {
-            Collection<ResourceInstance> resourcesBySpecificType = resourceInstancesByType.get(resourceInstance.getResource().getResourceType());
-            if (resourcesBySpecificType == null) {
-                resourceInstancesByType.put(resourceInstance.getResource().getResourceType(), new ArrayList<>());
+    public void addModelInstance(ModelInstance modelInstance) {
+        if (domain.getSupportedModelTypes().contains(modelInstance.getModel().getModelType())) {
+            Collection<ModelInstance> modelsBySpecificType = modelInstancesByType.get(modelInstance.getModel().getModelType());
+            if (modelsBySpecificType == null) {
+                modelInstancesByType.put(modelInstance.getModel().getModelType(), new ArrayList<>());
             }
-            resourceInstancesByType.get(resourceInstance.getResource().getResourceType()).add(resourceInstance);
-            this.resourceInstances.add(resourceInstance);
+            modelInstancesByType.get(modelInstance.getModel().getModelType()).add(modelInstance);
+            this.modelInstances.add(modelInstance);
             for (ContextEventListener l : listeners) {
-                l.onResourceInstanceAdded(new ResourceInstanceAddedEvent(resourceInstance.getId(), resourceInstance.getResource()));
+                l.onResourceInstanceAdded(new ModelInstanceAddedEvent(modelInstance.getId(), modelInstance.getModel()));
             }
         } else {
-            throw new IllegalStateException("ResourceInstance Type: " + resourceInstance.getResource().getResourceType()
-                    + "not supported!. Supported ResourceInstance Types: " + domain.getSupportedResourceTypes());
+            throw new IllegalStateException("ModelInstance Type: " + modelInstance.getModel().getModelType()
+                    + "not supported!. Supported ModelInstance Types: " + domain.getSupportedModelTypes());
         }
     }
 
     @Override
-    public void removeResourceInstance(String resourceInstanceId) {
-        ResourceInstance remove = null;
-        for (ResourceInstance r : resourceInstances) {
-            if (r.getId().equals(resourceInstanceId)) {
+    public void removeModelInstance(String modelInstanceId) {
+        ModelInstance remove = null;
+        for (ModelInstance r : modelInstances) {
+            if (r.getId().equals(modelInstanceId)) {
                 remove = r;
             }
         }
-        resourceInstances.remove(remove);
+        modelInstances.remove(remove);
         for (ContextEventListener l : listeners) {
-            l.onResourceInstanceRemoved(new ResourceInstanceRemovedEvent(remove.getId(), remove.getResource()));
+            l.onResourceInstanceRemoved(new ModelInstanceRemovedEvent(remove.getId(), remove.getModel()));
         }
     }
 
     @Override
-    public Resource getResource(String resourceId) {
-        for (Resource r : resources) {
-            if (r.getId().equals(resourceId)) {
-                return r;
+    public Model getModel(String modelId) {
+        for (Model m : models) {
+            if (m.getId().equals(modelId)) {
+                return m;
             }
         }
         return null;
     }
 
     @Override
-    public void removeResource(String resourceId) {
-        Resource remove = null;
-        for (Resource r : resources) {
-            if (r.getId().equals(resourceId)) {
-                remove = r;
+    public void removeModel(String resourceId) {
+        Model remove = null;
+        for (Model m : models) {
+            if (m.getId().equals(resourceId)) {
+                remove = m;
             }
         }
-        resources.remove(remove);
+        models.remove(remove);
         for (ContextEventListener l : listeners) {
             l.onResourceRemoved(new ResourceRemovedEvent(remove.getName()));
         }
@@ -179,8 +186,6 @@ public class BaseContextImpl implements Context {
     public void clearContextEventListeners() {
         listeners.clear();
     }
-
-
 
     @Override
     public Collection<Class> getAvailableCommands() {

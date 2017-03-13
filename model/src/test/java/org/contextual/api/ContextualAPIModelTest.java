@@ -2,12 +2,13 @@ package org.contextual.api;
 
 import org.contextual.api.listeners.DomainEventListener;
 import org.contextual.api.tests.mocks.MockCommandExecutorService;
-import org.contextual.api.tests.mocks.MockResourceA;
-import org.contextual.api.tests.mocks.MockResourceB;
+import org.contextual.api.tests.mocks.MockModelA;
+import org.contextual.api.tests.mocks.MockModelB;
 import org.contextual.api.tests.mocks.cmds.MockExecuteSomethingACommand;
 import org.contextual.api.tests.mocks.listeners.MockContextEventListener;
 import org.contextual.api.tests.mocks.listeners.MockDomainEventListener;
 import org.contextual.api.tests.mocks.listeners.MockExecutorEventListener;
+import org.contextual.api.utils.IdGenerator;
 import org.contextual.base.BaseEndpointImpl;
 import org.contextual.api.tests.mocks.services.MockServiceA;
 import org.contextual.base.BaseContextImpl;
@@ -17,7 +18,6 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.Future;
 
 import static org.junit.Assert.*;
@@ -33,8 +33,8 @@ public class ContextualAPIModelTest {
 
 
         Domain myDomain = new BaseDomainImpl("my domain");
-        myDomain.addSupportedResourceType(MockResourceA.TYPE_INSTANCE);
-        myDomain.addSupportedResourceType(MockResourceB.TYPE_INSTANCE);
+        myDomain.addSupportedResourceType(MockModelA.TYPE_INSTANCE);
+        myDomain.addSupportedResourceType(MockModelB.TYPE_INSTANCE);
         myDomain.addSupportedServiceType(MockServiceA.TYPE_INSTANCE);
 
         DomainEventListener mockDomainEventListener = new MockDomainEventListener();
@@ -64,29 +64,29 @@ public class ContextualAPIModelTest {
         mySecondContext.addContextEventListener(secondMockContextEventListener);
         myDomain.registerContext(mySecondContext);
 
-        MockResourceA mockResourceA = new MockResourceA("myfile.a");
-        myContext.addResource(mockResourceA);
+        MockModelA mockModelA = new MockModelA("myfile.a");
+        myContext.addModel(mockModelA);
 
-        myContext.addResource(new MockResourceB("myfile2.b"));
+        myContext.addModel(new MockModelB("myfile2.b"));
 
         try {
-            myContext.addResource(new DummyResource());
+            myContext.addModel(new DummyModel());
             fail();
         }catch(Exception e){
             assertTrue(e instanceof IllegalStateException);
         }
 
-        mySecondContext.addResource(new MockResourceA("myfile.a"));
+        mySecondContext.addModel(new MockModelA("myfile.a"));
 
-        assertEquals(1, mySecondContext.getResources().size());
+        assertEquals(1, mySecondContext.getModels().size());
 
-        assertEquals(2, myContext.getResources().size());
+        assertEquals(2, myContext.getModels().size());
 
-        assertEquals(1, myContext.getResourcesByType(MockResourceA.TYPE_INSTANCE).size());
-        assertEquals(1, myContext.getResourcesByType(MockResourceB.TYPE_INSTANCE).size());
+        assertEquals(1, myContext.getModelsByType(MockModelA.TYPE_INSTANCE).size());
+        assertEquals(1, myContext.getModelsByType(MockModelB.TYPE_INSTANCE).size());
 
-        assertEquals(1, mySecondContext.getResourcesByType(MockResourceA.TYPE_INSTANCE).size());
-        assertEquals(0, mySecondContext.getResourcesByType(MockResourceB.TYPE_INSTANCE).size());
+        assertEquals(1, mySecondContext.getModelsByType(MockModelA.TYPE_INSTANCE).size());
+        assertEquals(0, mySecondContext.getModelsByType(MockModelB.TYPE_INSTANCE).size());
 
         assertEquals(2, mockContextEventListener.getEvents().size());
         assertEquals(1, secondMockContextEventListener.getEvents().size());
@@ -96,9 +96,9 @@ public class ContextualAPIModelTest {
 
         assertEquals(MockExecuteSomethingACommand.class, commands.iterator().next()  );
 
-        Resource resource = myContext.getResource(mockResourceA.getId());
+        Model model = myContext.getModel(mockModelA.getId());
 
-        MockExecuteSomethingACommand mockExecuteSomethingACommand = new MockExecuteSomethingACommand(resource, "prop1", "prop2");
+        MockExecuteSomethingACommand mockExecuteSomethingACommand = new MockExecuteSomethingACommand(model, "prop1", "prop2");
 
         // @TODO: nasty API here.. we shouldn't send my context as parameter.. due the fact that myContext is getting the executor service
         //          it should be able to get the reference from itself. But now the Executor is decoupled from the Context.. which might be good
@@ -126,7 +126,7 @@ public class ContextualAPIModelTest {
         // Creating a Domain
         Domain myDomain = new BaseDomainImpl("my domain");
 
-        myDomain.addSupportedResourceType(MockResourceA.TYPE_INSTANCE);
+        myDomain.addSupportedResourceType(MockModelA.TYPE_INSTANCE);
 
         DomainEventListener mockDomainEventListener = new MockDomainEventListener();
         myDomain.addDomainEventListener(mockDomainEventListener);
@@ -144,14 +144,14 @@ public class ContextualAPIModelTest {
         myContext.setExecutorService(mockCommandExecutorService);
         myDomain.registerContext(myContext);
 
-        MockResourceA mockResourceA = new MockResourceA("myfile.a");
-        myContext.addResource(mockResourceA);
+        MockModelA mockModelA = new MockModelA("myfile.a");
+        myContext.addModel(mockModelA);
 
         myContext.addService(MockServiceA.TYPE_INSTANCE, new MockServiceA("mock service",
                 "this is my mock service",
                 new BaseEndpointImpl("localhost", 8080, "my-app")));
 
-        assertEquals(1, myContext.getResources().size());
+        assertEquals(1, myContext.getModels().size());
 
         List<Class> cmds = new ArrayList<>();
         cmds.add( MockExecuteSomethingACommand.class);
@@ -163,7 +163,7 @@ public class ContextualAPIModelTest {
         assertEquals(MockExecuteSomethingACommand.class, commands.iterator().next()  );
 
         // Creating instance of Supported Command
-        MockExecuteSomethingACommand mockExecuteSomethingACommand = new MockExecuteSomethingACommand(mockResourceA, "prop1", "prop2");
+        MockExecuteSomethingACommand mockExecuteSomethingACommand = new MockExecuteSomethingACommand(mockModelA, "prop1", "prop2");
 
         // Executing command
         // @TODO: nasty API here.. we shouldn't send my context as parameter.. due the fact that myContext is getting the executor service
@@ -178,7 +178,7 @@ public class ContextualAPIModelTest {
         }
         assertTrue(execution.isDone());
 
-        Collection<ResourceInstance> instances = myContext.getResourceInstances();
+        Collection<ModelInstance> instances = myContext.getModelInstances();
 
         assertEquals(1, instances.size());
 
@@ -191,15 +191,15 @@ public class ContextualAPIModelTest {
 
 
 
-    private class DummyResource implements Resource{
+    private class DummyModel implements Model{
         @Override
         public String getId() {
-            return UUID.randomUUID().toString();
+            return IdGenerator.generateIdForEntity("dummy-model");
         }
 
         @Override
         public String getName() {
-            return "Dummy Resource";
+            return "Dummy Model";
         }
 
         @Override
@@ -208,15 +208,15 @@ public class ContextualAPIModelTest {
         }
 
         @Override
-        public ResourceType getResourceType() {
-            return new UnsupportedResourceType();
+        public ModelType getModelType() {
+            return new UnsupportedModelType();
         }
     }
-    private class UnsupportedResourceType implements ResourceType{
+    private class UnsupportedModelType implements ModelType {
 
         @Override
         public String getName() {
-            return "UnsupportedResourceType";
+            return "UnsupportedModelType";
         }
     }
 }

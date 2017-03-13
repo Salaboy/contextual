@@ -2,6 +2,9 @@ package org.contextual.base;
 
 import org.contextual.api.services.Endpoint;
 import org.contextual.api.services.Service;
+import org.contextual.api.utils.IdGenerator;
+
+import java.util.UUID;
 
 /**
  * Created by msalatino on 09/03/2017.
@@ -14,6 +17,7 @@ public abstract class BaseServiceImpl implements Service {
     private Endpoint endpoint;
 
     public BaseServiceImpl(String name, String description, Endpoint endpoint) {
+        this.id = IdGenerator.generateIdForEntity("service");
         this.name = name;
         this.description = description;
         this.endpoint = endpoint;

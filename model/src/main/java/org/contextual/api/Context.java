@@ -23,23 +23,23 @@ public interface Context {
 
     void setName(String name);
 
-    Collection<Resource> getResources();
+    Collection<Model> getModels();
 
-    Collection<Resource> getResourcesByType(ResourceType type);
+    Collection<Model> getModelsByType(ModelType type);
 
-    void addResource(Resource resource);
+    void addModel(Model model);
 
-    Resource getResource(String resourceId);
+    Model getModel(String modelId);
 
-    void removeResource(String resourceId);
+    void removeModel(String modelId);
 
-    Collection<ResourceInstance> getResourceInstances();
+    Collection<ModelInstance> getModelInstances();
 
-    Collection<ResourceInstance> getResourceInstancesByType(ResourceType type);
+    Collection<ModelInstance> getModelInstancesByType(ModelType type);
 
-    void addResourceInstance(ResourceInstance resourceInstance);
+    void addModelInstance(ModelInstance modelInstance);
 
-    void removeResourceInstance(String resourceInstanceId);
+    void removeModelInstance(String modelInstanceId);
 
     void addContextEventListener(ContextEventListener contextEventListener);
 

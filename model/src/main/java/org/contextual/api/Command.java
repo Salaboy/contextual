@@ -10,7 +10,7 @@ import java.util.Collection;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property="@class")
 public interface Command {
 
-    Collection<ResourceType> applicableTo();
+    Collection<ModelType> applicableTo();
 
-    Collection<Resource> getResources();
+    Collection<Model> getModels();
 }

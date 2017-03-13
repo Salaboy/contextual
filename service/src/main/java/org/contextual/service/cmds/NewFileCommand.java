@@ -2,12 +2,10 @@ package org.contextual.service.cmds;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.contextual.api.Command;
-import org.contextual.api.Resource;
-import org.contextual.api.ResourceType;
+import org.contextual.api.Model;
+import org.contextual.api.ModelType;
 import org.contextual.base.BaseCommandImpl;
-import org.contextual.service.resources.DocumentResource;
-import org.contextual.service.resources.ProcessResource;
+import org.contextual.service.resources.internal.DocumentModel;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,11 +20,11 @@ public class NewFileCommand extends BaseCommandImpl {
     private String fileVersion;
 
     @JsonCreator
-    public NewFileCommand(@JsonProperty("resources") Collection<Resource> resources,
+    public NewFileCommand(@JsonProperty("resources") Collection<Model> models,
                           @JsonProperty("fileName") String fileName,
                           @JsonProperty("fileExtension") String fileExtension,
                           @JsonProperty("fileVersion") String fileVersion) {
-        this.resources = resources;
+        this.models = models;
         this.fileName = fileName;
         this.fileExtension = fileExtension;
         this.fileVersion = fileVersion;
@@ -46,9 +44,9 @@ public class NewFileCommand extends BaseCommandImpl {
     }
 
     @Override
-    public Collection<ResourceType> applicableTo() {
-        List<ResourceType> supportedTypes = new ArrayList<>();
-        supportedTypes.add(DocumentResource.TYPE_INSTANCE);
+    public Collection<ModelType> applicableTo() {
+        List<ModelType> supportedTypes = new ArrayList<>();
+        supportedTypes.add(DocumentModel.TYPE_INSTANCE);
         return supportedTypes;
     }
 
@@ -58,7 +56,7 @@ public class NewFileCommand extends BaseCommandImpl {
                 "fileName='" + fileName + '\'' +
                 ", fileExtension='" + fileExtension + '\'' +
                 ", fileVersion='" + fileVersion + '\'' +
-                ", resources=" + resources +
+                ", models=" + models +
                 '}';
     }
 }

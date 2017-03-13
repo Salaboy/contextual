@@ -1,28 +1,28 @@
-package org.contextual.service.resources;
+package org.contextual.service.resources.internal;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.contextual.api.Resource;
-import org.contextual.api.ResourceType;
+import org.contextual.api.Model;
+import org.contextual.api.ModelType;
+import org.contextual.api.utils.IdGenerator;
 
-import java.util.UUID;
 
 /**
  * Created by msalatino on 21/02/2017.
  */
-public class DocumentResource implements Resource {
-    public static final DocumentResourceType TYPE_INSTANCE = new DocumentResourceType();
+public class DocumentModel implements Model {
+    public static final DocumentModelType TYPE_INSTANCE = new DocumentModelType();
     private String id;
     private String name;
     private String documentPath;
     private String documentVersion;
 
     @JsonCreator
-    public DocumentResource(@JsonProperty("name") String name,
-                            @JsonProperty("documentPath") String documentPath,
-                            @JsonProperty("documentVersion") String documentVersion) {
-        this.id = UUID.randomUUID().toString();
+    public DocumentModel(@JsonProperty("name") String name,
+                         @JsonProperty("documentPath") String documentPath,
+                         @JsonProperty("documentVersion") String documentVersion) {
+        this.id = IdGenerator.generateIdForEntity("DocumentModel");
         this.name = name;
         this.documentPath = documentPath;
         this.documentVersion = documentVersion;
@@ -60,16 +60,16 @@ public class DocumentResource implements Resource {
     }
 
     @Override
-    public ResourceType getResourceType() {
+    public ModelType getModelType() {
         return TYPE_INSTANCE;
     }
 
     @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property="@class")
-    public static class DocumentResourceType implements ResourceType{
+    public static class DocumentModelType implements ModelType {
 
         @Override
         public String getName() {
-            return "DocumentResourceType";
+            return "DocumentModelType";
         }
     }
 }

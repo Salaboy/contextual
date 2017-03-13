@@ -6,9 +6,7 @@ package org.contextual.service;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.*;
 
-import com.rabbitmq.client.impl.ChannelN;
 import org.contextual.api.*;
-import org.contextual.api.services.ServiceType;
 import org.contextual.base.BaseContextImpl;
 import org.contextual.base.BaseDomainImpl;
 import org.contextual.base.BaseEndpointImpl;
@@ -18,17 +16,15 @@ import org.contextual.service.impl.ExtendedCommandExecutorService;
 import org.contextual.service.listeners.RabbitMQContextEventListener;
 import org.contextual.service.listeners.RabbitMQDomainEventListener;
 import org.contextual.service.listeners.RabbitMQExecutorEventListener;
-import org.contextual.service.resources.ContextResource;
-import org.contextual.service.resources.DocumentResource;
-import org.contextual.service.resources.DomainResource;
-import org.contextual.service.resources.ProcessResource;
-import org.contextual.service.results.ContextCreationResult;
+import org.contextual.service.resources.internal.DocumentModel;
+import org.contextual.service.resources.internal.ProcessModel;
 import org.contextual.service.results.GetAvailableCommandsResult;
-import org.contextual.service.results.GetContextsResult;
-import org.contextual.service.results.GetResourcesResult;
 import org.contextual.service.services.BPMService;
 import org.contextual.service.services.ContentService;
 import org.springframework.hateoas.ExposesResourceFor;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -62,8 +59,8 @@ public class DomainController {
         domains = new ArrayList<>();
 
         Domain domain = new BaseDomainImpl("Application Domain");
-        domain.addSupportedResourceType(ProcessResource.TYPE_INSTANCE);
-        domain.addSupportedResourceType(DocumentResource.TYPE_INSTANCE);
+        domain.addSupportedResourceType(ProcessModel.TYPE_INSTANCE);
+        domain.addSupportedResourceType(DocumentModel.TYPE_INSTANCE);
         domain.addSupportedServiceType(BPMService.TYPE_INSTANCE);
         domain.addSupportedServiceType(ContentService.TYPE_INSTANCE);
         domain.addDomainEventListener(domainEventListener);
@@ -81,85 +78,56 @@ public class DomainController {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/")
-    public HttpEntity<List<DomainResource>> getDomains() {
-        List<DomainResource> result = new ArrayList<>();
-        for (Domain d : domains) {
-            List<ResourceType> supportedResourceTypes = d.getSupportedResourceTypes();
-            List<String> resourceTypes = new ArrayList<>(d.getSupportedResourceTypes().size());
-            for (ResourceType rt : supportedResourceTypes) {
-                resourceTypes.add(rt.getName());
-            }
-            List<ServiceType> supportedServiceTypes = d.getSupportedServiceTypes();
-            List<String> serviceTypes = new ArrayList<>(d.getSupportedServiceTypes().size());
-            for (ServiceType st : supportedServiceTypes) {
-                serviceTypes.add(st.getName());
-            }
-            List<ContextResource> contexts = new ArrayList<>(d.getContexts().size());
-            for(Context c : d.getContexts()){
-                ContextResource contextResource = new ContextResource(c.getId(), c.getName());
-                contexts.add(contextResource);
-            }
-            DomainResource domainResource = new DomainResource(d.getId(), d.getName(), resourceTypes, serviceTypes,contexts);
-            domainResource.add(linkTo(DomainController.class).slash(d.getId()).withSelfRel());
-            result.add(domainResource);
-        }
-
-        return new ResponseEntity<List<DomainResource>>(result, HttpStatus.OK);
+    public Resources<Resource<Domain>> getDomains() {
+        Link selfLink = linkTo(methodOn(DomainController.class).getDomains()).withSelfRel();
+        List<Resource<Domain>> domainResources = domains.stream().map(domain -> domainToResource(domain)).collect(Collectors.toList());
+        return new Resources<>(domainResources, selfLink);
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "{domainId}")
-    public HttpEntity<DomainResource> getDomain(@PathVariable("domainId") final String domainId) {
+    public Resource<Domain> getDomain(@PathVariable("domainId") final String domainId) {
+        return domainToResource(getDomainById(domainId));
+    }
 
-        DomainResource domainResource = domainToResource(domainId);
-
-        return new ResponseEntity<DomainResource>(domainResource, HttpStatus.OK);
+    private Resource<Domain> domainToResource(Domain domain){
+        Link selfLink = linkTo(DomainController.class).slash(domain.getId()).withSelfRel();
+        Link contextsLink = linkTo(methodOn(DomainController.class).getContexts(domain.getId())).withRel("contexts");
+        return new Resource<>(domain, selfLink, contextsLink);
     }
 
 
-    private DomainResource domainToResource(String domainId){
-        Domain d = getDomainById(domainId);
-        List<ResourceType> supportedResourceTypes = d.getSupportedResourceTypes();
-        List<String> resourceTypes = new ArrayList<>(d.getSupportedResourceTypes().size());
-        for (ResourceType rt : supportedResourceTypes) {
-            resourceTypes.add(rt.getName());
-        }
-        List<ServiceType> supportedServiceTypes = d.getSupportedServiceTypes();
-        List<String> serviceTypes = new ArrayList<>(d.getSupportedServiceTypes().size());
-        for (ServiceType st : supportedServiceTypes) {
-            serviceTypes.add(st.getName());
-        }
-        List<ContextResource> contexts = new ArrayList<>(d.getContexts().size());
-        for(Context c : d.getContexts()){
-            contexts.add(contextToResource(d, c));
-        }
-        DomainResource domainResource = new DomainResource(d.getId(), d.getName(), resourceTypes, serviceTypes, contexts);
-        domainResource.add(linkTo(DomainController.class).slash(d.getId()).withSelfRel());
-        return domainResource;
+    private Resource<Context> contextToResource(Domain domain, Context context){
+        Link selfLink = linkTo(methodOn(DomainController.class).getContext(domain.getId(), context.getId())).withSelfRel();
+        Link domainLink = linkTo(methodOn(DomainController.class).getDomain(domain.getId())).withRel("domain");
+        Link modelsLink = linkTo(methodOn(DomainController.class).getModels(domain.getId(), context.getId())).withRel("models");
+        Link commandsLink = linkTo(methodOn(DomainController.class).getCommands(domain.getId(), context.getId())).withRel("commands");
+        return new Resource<>(context, selfLink, domainLink, modelsLink, commandsLink);
     }
 
-    private ContextResource contextToResource(Domain d, Context c){
-        ContextResource contextResource = new ContextResource(c.getId(), c.getName());
-        contextResource.add(linkTo(methodOn(DomainController.class).getContext(d.getId(), c.getId())).withSelfRel());
-        contextResource.add(linkTo(methodOn(DomainController.class).getResources(d.getId(), c.getId())).withRel("resources"));
-        contextResource.add(linkTo(methodOn(DomainController.class).getCommands(d.getId(), c.getId())).withRel("commands"));
-        return contextResource;
+    @RequestMapping(method = RequestMethod.GET, path = "{domainId}/contexts")
+    public Resources<Resource<Context>> getContexts(@PathVariable("domainId") final String domainId) {
+        Domain domain = getDomainById(domainId);
+        Link selfLink = linkTo(methodOn(DomainController.class).getDomains()).withSelfRel();
+        List<Context> contexts = domain.getContexts();
+        List<Resource<Context>> contextResources = contexts.stream().map(context -> contextToResource(domain, context)).collect(Collectors.toList());
+        return new Resources<>(contextResources, selfLink);
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "{domainId}/{contextId}")
-    public HttpEntity<ContextResource> getContext(@PathVariable("domainId") final String domainId,
+    public Resource<Context> getContext(@PathVariable("domainId") final String domainId,
                                                     @PathVariable("contextId") final String contextId) {
-        Domain d = getDomainById(domainId);
-        ContextResource contextResource = contextToResource(d, d.getContextById(contextId));
-        return new ResponseEntity<ContextResource>(contextResource, HttpStatus.OK);
+        Domain domain = getDomainById(domainId);
+        Context context = domain.getContextById(contextId);
+        return contextToResource(domain, context);
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "{domainId}")
-    public HttpEntity<ContextResource> createContext(
+    public Resource<Context> createContext(
             @PathVariable("domainId") final String domainId,
             @RequestBody(required = true) String name) {
 
-
-        Context context = new BaseContextImpl(name, getDomainById(domainId));
+        Domain domainById = getDomainById(domainId);
+        Context context = new BaseContextImpl(name, domainById);
         List<Class> cmds = new ArrayList<>();
         cmds.add(StartProcessCommand.class);
         cmds.add(NewFileCommand.class);
@@ -168,40 +136,70 @@ public class DomainController {
         ExtendedCommandExecutorService extendedCommandExecutorService = new ExtendedCommandExecutorService();
         extendedCommandExecutorService.addExecutorEventListener(executorEventListener);
         context.setExecutorService(extendedCommandExecutorService);
-        getDomainById(domainId).registerContext(context);
+        domainById.registerContext(context);
         context.addService(BPMService.TYPE_INSTANCE, new BPMService("bpm", "my favourite BPM server",
                 new BaseEndpointImpl("localhost", 8080, "bpm")));
 
-
-        ContextResource contextResource = new ContextResource(context.getId(), context.getName());
-
-        contextResource.add(linkTo(DomainController.class).slash(domainId).slash(context.getId()).withSelfRel());
-        contextResource.add(linkTo(DomainController.class).slash(domainId).withRel("domain"));
-
-
-        return new ResponseEntity<ContextResource>(contextResource, HttpStatus.OK);
+       return contextToResource(domainById, context);
     }
 
 
-    @RequestMapping(method = RequestMethod.POST, path = "{domainId}/{contextId}/resources")
-    public HttpEntity<Void> newResource(
+    @RequestMapping(method = RequestMethod.POST, path = "{domainId}/{contextId}/models")
+    public Resource<Model> newModel(
             @PathVariable("domainId") final String domainId,
             @PathVariable("contextId") final String contextId,
-            @RequestBody(required = true) Resource resource) {
+            @RequestBody(required = true) Model model) {
 
-        getDomainById(domainId).getContextById(contextId).addResource(resource);
-
-        return new ResponseEntity<Void>(HttpStatus.CREATED);
+        getDomainById(domainId).getContextById(contextId).addModel(model);
+        Link models = linkTo(methodOn(DomainController.class).getModels(domainId, contextId)).withRel("models");
+        Link selfLink = linkTo(methodOn(DomainController.class).getModelById(domainId, contextId, model.getId())).withSelfRel();
+        return new Resource<Model>(model, selfLink, models);
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "{domainId}/{contextId}/resources")
-    public HttpEntity<GetResourcesResult> getResources(
+    @RequestMapping(method = RequestMethod.GET, path = "{domainId}/{contextId}/models")
+    public Resources<Resource<Model>> getModels(
             @PathVariable("domainId") final String domainId,
             @PathVariable("contextId") final String contextId) {
-        Collection<Resource> resources = getDomainById(domainId).getContextById(contextId).getResources();
-        GetResourcesResult result = new GetResourcesResult(new ArrayList<>(resources));
-        return new ResponseEntity<GetResourcesResult>(result, HttpStatus.OK);
+        Domain domain = getDomainById(domainId);
+        Context context = domain.getContextById(contextId);
+        Collection<Model> models = context.getModels();
+        List<Resource<Model>> domainModels = models.stream().map(model -> modelToResource(domain, context, model)).collect(Collectors.toList());
+        Link selfLink = linkTo(methodOn(DomainController.class).getModels(domainId, contextId)).withSelfRel();
+        return new Resources<Resource<Model>>(domainModels,selfLink);
     }
+
+
+    @RequestMapping(method = RequestMethod.GET, path = "{domainId}/{contextId}/models/{modelId}")
+    public Resource<Model> getModelById(
+            @PathVariable("domainId") final String domainId,
+            @PathVariable("contextId") final String contextId, @PathVariable("modelId") final String modelId ) {
+        Domain domain = getDomainById(domainId);
+        Context context = domain.getContextById(contextId);
+        Collection<Model> models = context.getModels();
+        for(Model m : models){
+            if(m.getId().equals(modelId)){
+                return modelToResource(domain, context, m);
+            }
+        }
+        return null;
+
+    }
+
+
+
+    private Resource<Model> modelToResource(Domain domain, Context context, Model model){
+        Link selfLink = linkTo(methodOn(DomainController.class).getModelById(domain.getId(), context.getId(), model.getId())).withSelfRel();
+        return new Resource<>(model, selfLink);
+    }
+
+//
+//    @RequestMapping(method = RequestMethod.GET, path = "{domainId}/{contextId}/resources-instances")
+//    public Resources<Resource<ModelInstance>> getResourcesInstances(
+//            @PathVariable("domainId") final String domainId,
+//            @PathVariable("contextId") final String contextId) {
+//        Collection<ModelInstance> modelInstances = getDomainById(domainId).getContextById(contextId).getModelInstances();
+//        return modelInstances;
+//    }
 
     @RequestMapping(method = RequestMethod.GET, path = "{domainId}/{contextId}/cmds")
     public HttpEntity<GetAvailableCommandsResult> getCommands(
@@ -219,9 +217,7 @@ public class DomainController {
             @RequestBody(required = true) Command cmd) {
 
         Context contextById = getDomainById(domainId).getContextById(contextId);
-
         contextById.getExecutorService().execute(cmd, contextById);
-
         return new ResponseEntity<Void>(HttpStatus.OK);
     }
 

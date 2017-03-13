@@ -1,9 +1,8 @@
 package org.contextual.api.tests.mocks.cmds;
 
-import org.contextual.api.Command;
-import org.contextual.api.Resource;
-import org.contextual.api.ResourceType;
-import org.contextual.api.tests.mocks.MockResourceA;
+import org.contextual.api.Model;
+import org.contextual.api.ModelType;
+import org.contextual.api.tests.mocks.MockModelA;
 import org.contextual.base.BaseCommandImpl;
 
 import java.util.ArrayList;
@@ -17,15 +16,15 @@ public class MockExecuteSomethingACommand extends BaseCommandImpl {
     private String property1;
     private String property2;
 
-    public MockExecuteSomethingACommand(Collection<Resource> resources, String property1, String property2) {
-        this.resources = resources;
+    public MockExecuteSomethingACommand(Collection<Model> models, String property1, String property2) {
+        this.models = models;
         this.property1 = property1;
         this.property2 = property2;
     }
 
-    public MockExecuteSomethingACommand(Resource resource, String property1, String property2) {
-        this.resources = new ArrayList<>();
-        resources.add(resource);
+    public MockExecuteSomethingACommand(Model model, String property1, String property2) {
+        this.models = new ArrayList<>();
+        models.add(model);
         this.property1 = property1;
         this.property2 = property2;
     }
@@ -39,9 +38,9 @@ public class MockExecuteSomethingACommand extends BaseCommandImpl {
     }
 
     @Override
-    public Collection<ResourceType> applicableTo() {
-        List<ResourceType> supportedTypes = new ArrayList<>();
-        supportedTypes.add(MockResourceA.TYPE_INSTANCE);
+    public Collection<ModelType> applicableTo() {
+        List<ModelType> supportedTypes = new ArrayList<>();
+        supportedTypes.add(MockModelA.TYPE_INSTANCE);
         return supportedTypes;
     }
 

@@ -1,10 +1,11 @@
-package org.contextual.service.resources;
+package org.contextual.service.resources.internal;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.contextual.api.Resource;
-import org.contextual.api.ResourceType;
+import org.contextual.api.Model;
+import org.contextual.api.ModelType;
+import org.contextual.api.utils.IdGenerator;
 
 import java.util.UUID;
 
@@ -12,18 +13,18 @@ import java.util.UUID;
  * Created by msalatino on 21/02/2017.
  */
 
-public class ProcessResource implements Resource {
-    public static final ProcessResourceType TYPE_INSTANCE = new ProcessResourceType();
+public class ProcessModel implements Model {
+    public static final ProcessModelType TYPE_INSTANCE = new ProcessModelType();
     private String id;
     private String name;
     private String processName;
     private String processVersion;
 
     @JsonCreator
-    public ProcessResource(@JsonProperty("name") String name,
-                           @JsonProperty("processName") String processName,
-                           @JsonProperty("processVersion") String processVersion) {
-        this.id = UUID.randomUUID().toString();
+    public ProcessModel(@JsonProperty("name") String name,
+                        @JsonProperty("processName") String processName,
+                        @JsonProperty("processVersion") String processVersion) {
+        this.id = IdGenerator.generateIdForEntity("ProcessModel");
         this.name = name;
         this.processName = processName;
         this.processVersion = processVersion;
@@ -45,7 +46,7 @@ public class ProcessResource implements Resource {
     }
 
     @Override
-    public ResourceType getResourceType() {
+    public ModelType getModelType() {
         return TYPE_INSTANCE;
     }
 
@@ -58,10 +59,10 @@ public class ProcessResource implements Resource {
     }
 
     @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property="@class")
-    public static class ProcessResourceType implements ResourceType{
+    public static class ProcessModelType implements ModelType {
         @Override
         public String getName() {
-            return "ProcessResourceType";
+            return "ProcessModelType";
         }
     }
 }

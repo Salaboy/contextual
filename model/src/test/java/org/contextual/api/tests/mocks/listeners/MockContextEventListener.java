@@ -3,7 +3,6 @@ package org.contextual.api.tests.mocks.listeners;
 import org.contextual.api.Event;
 import org.contextual.api.events.*;
 import org.contextual.base.listeners.BaseContextEventListener;
-import org.contextual.base.listeners.BaseDomainEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,12 +30,12 @@ public class MockContextEventListener extends BaseContextEventListener {
     }
 
     @Override
-    public void onResourceInstanceAdded(ResourceInstanceAddedEvent riae) {
+    public void onResourceInstanceAdded(ModelInstanceAddedEvent riae) {
         events.add(riae);
     }
 
     @Override
-    public void onResourceInstanceRemoved(ResourceInstanceRemovedEvent rire) {
+    public void onResourceInstanceRemoved(ModelInstanceRemovedEvent rire) {
         events.add(rire);
     }
 

@@ -1,13 +1,9 @@
 package org.contextual.api;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import org.contextual.api.listeners.DomainEventListener;
 import org.contextual.api.services.ServiceType;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by msalatino on 21/02/2017.
@@ -34,9 +30,9 @@ public interface Domain {
 
     void clearDomainEventListeners();
 
-    List<ResourceType> getSupportedResourceTypes();
+    List<ModelType> getSupportedModelTypes();
 
-    void addSupportedResourceType(ResourceType type);
+    void addSupportedResourceType(ModelType type);
 
     List<ServiceType> getSupportedServiceTypes();
 

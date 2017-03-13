@@ -6,22 +6,22 @@ package org.contextual.service.results;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import org.contextual.api.Context;
-import org.contextual.api.Resource;
+import org.contextual.api.Model;
 import org.springframework.hateoas.ResourceSupport;
 
 import java.util.List;
 
 public class GetResourcesResult extends ResourceSupport {
 
-    private List<Resource> resources;
+    private List<Model> models;
 
     @JsonCreator
-    public GetResourcesResult(List<Resource> resources) {
-        this.resources = resources;
+    public GetResourcesResult(List<Model> models) {
+        this.models = models;
 
     }
 
-    public List<Resource> getResources() {
-        return resources;
+    public List<Model> getModels() {
+        return models;
     }
 }

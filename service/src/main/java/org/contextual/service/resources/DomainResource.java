@@ -1,6 +1,5 @@
 package org.contextual.service.resources;
 
-import org.contextual.api.ResourceType;
 import org.springframework.hateoas.ResourceSupport;
 
 import java.util.List;

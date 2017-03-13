@@ -3,7 +3,6 @@ package org.contextual.service.listeners;
 import org.contextual.api.Event;
 import org.contextual.api.events.*;
 import org.contextual.api.listeners.ContextEventListener;
-import org.contextual.api.listeners.DomainEventListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 
@@ -27,21 +26,21 @@ public class RabbitMQContextEventListener implements ContextEventListener {
 
     @Override
     public void onResourceAdded(ResourceAddedEvent rae) {
-        rabbitTemplate.convertAndSend(System.getProperty("QUEUE_NAME", "context-queue"), ">>> Context: Resource Added: " + rae.getResourceName());
+        rabbitTemplate.convertAndSend(System.getProperty("QUEUE_NAME", "context-queue"), ">>> Context: Model Added: " + rae.getResourceName());
     }
 
     @Override
     public void onResourceRemoved(ResourceRemovedEvent rre) {
-        rabbitTemplate.convertAndSend(System.getProperty("QUEUE_NAME", "context-queue"), ">>> Context: Resource Removed: " + rre.getResourceName());
+        rabbitTemplate.convertAndSend(System.getProperty("QUEUE_NAME", "context-queue"), ">>> Context: Model Removed: " + rre.getResourceName());
     }
 
     @Override
-    public void onResourceInstanceAdded(ResourceInstanceAddedEvent riae) {
-        rabbitTemplate.convertAndSend(System.getProperty("QUEUE_NAME", "context-queue"), ">>> Context: ResourceInstance Added: " + riae.getResourceInstanceId() + " - Resource: " + riae.getResource());
+    public void onResourceInstanceAdded(ModelInstanceAddedEvent riae) {
+        rabbitTemplate.convertAndSend(System.getProperty("QUEUE_NAME", "context-queue"), ">>> Context: ModelInstance Added: " + riae.getModelInstanceId() + " - Model: " + riae.getModel());
     }
 
     @Override
-    public void onResourceInstanceRemoved(ResourceInstanceRemovedEvent rire) {
-        rabbitTemplate.convertAndSend(System.getProperty("QUEUE_NAME", "context-queue"), ">>> Context: ResourceInstance Removed: " + rire.getResourceInstanceId() + " - Resource: " + rire.getResource());
+    public void onResourceInstanceRemoved(ModelInstanceRemovedEvent rire) {
+        rabbitTemplate.convertAndSend(System.getProperty("QUEUE_NAME", "context-queue"), ">>> Context: ModelInstance Removed: " + rire.getModelInstanceId() + " - Model: " + rire.getModel());
     }
 }

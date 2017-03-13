@@ -1,11 +1,8 @@
 package org.contextual.service.services;
 
 import org.contextual.api.services.Endpoint;
-import org.contextual.api.services.Service;
 import org.contextual.api.services.ServiceType;
 import org.contextual.base.BaseServiceImpl;
-
-import java.util.UUID;
 
 /**
  * Created by msalatino on 08/03/2017.

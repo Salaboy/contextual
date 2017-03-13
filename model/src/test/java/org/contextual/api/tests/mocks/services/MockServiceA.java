@@ -3,6 +3,7 @@ package org.contextual.api.tests.mocks.services;
 import org.contextual.api.services.Endpoint;
 import org.contextual.api.services.Service;
 import org.contextual.api.services.ServiceType;
+import org.contextual.api.utils.IdGenerator;
 
 import java.util.UUID;
 
@@ -20,7 +21,7 @@ public class MockServiceA implements Service {
     private Endpoint endpoint;
 
     public MockServiceA(String name, String description, Endpoint endpoint) {
-        this.id = UUID.randomUUID().toString();
+        this.id = IdGenerator.generateIdForEntity("mock-service-a");
         this.name = name;
         this.description = description;
         this.endpoint = endpoint;

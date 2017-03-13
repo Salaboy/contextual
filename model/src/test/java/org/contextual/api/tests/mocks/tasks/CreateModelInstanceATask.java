@@ -1,9 +1,9 @@
 package org.contextual.api.tests.mocks.tasks;
 
 import org.contextual.api.Context;
-import org.contextual.api.Resource;
-import org.contextual.api.tests.mocks.MockResourceA;
-import org.contextual.api.tests.mocks.MockResourceInstanceA;
+import org.contextual.api.Model;
+import org.contextual.api.tests.mocks.MockModelInstanceA;
+import org.contextual.api.tests.mocks.MockModelA;
 import org.contextual.api.tests.mocks.cmds.MockExecuteSomethingACommand;
 import org.contextual.api.tests.mocks.services.MockServiceA;
 
@@ -13,12 +13,12 @@ import java.util.concurrent.Callable;
 /**
  * Created by msalatino on 24/02/2017.
  */
-public class CreateResourceInstanceATask implements Callable<Long> {
+public class CreateModelInstanceATask implements Callable<Long> {
 
     private MockExecuteSomethingACommand cmd;
     private Context context;
 
-    public CreateResourceInstanceATask(MockExecuteSomethingACommand cmd, Context context) {
+    public CreateModelInstanceATask(MockExecuteSomethingACommand cmd, Context context) {
         this.cmd = cmd;
         this.context = context;
     }
@@ -28,13 +28,13 @@ public class CreateResourceInstanceATask implements Callable<Long> {
     public Long call() throws Exception {
         // DO HTTP Call based on the cmd parameters...
         System.out.println("Executing task for cmd: " + cmd);
-        Iterator<Resource> iterator = cmd.getResources().iterator();
+        Iterator<Model> iterator = cmd.getModels().iterator();
         while(iterator.hasNext()){
-            Resource next = iterator.next();
-            if(next instanceof MockResourceA) {
+            Model next = iterator.next();
+            if(next instanceof MockModelA) {
                 ((MockServiceA)context.getServicesByType(MockServiceA.TYPE_INSTANCE).iterator().next()).echo(">>> Sending data from the Task ... ");
-                MockResourceInstanceA mockResourceInstanceA = new MockResourceInstanceA(next);
-                context.addResourceInstance(mockResourceInstanceA);
+                MockModelInstanceA mockResourceInstanceA = new MockModelInstanceA(next);
+                context.addModelInstance(mockResourceInstanceA);
             }
         }
 

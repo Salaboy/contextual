@@ -2,8 +2,8 @@ package org.contextual.base.listeners;
 
 
 import org.contextual.api.events.ResourceAddedEvent;
-import org.contextual.api.events.ResourceInstanceAddedEvent;
-import org.contextual.api.events.ResourceInstanceRemovedEvent;
+import org.contextual.api.events.ModelInstanceAddedEvent;
+import org.contextual.api.events.ModelInstanceRemovedEvent;
 import org.contextual.api.events.ResourceRemovedEvent;
 import org.contextual.api.listeners.ContextEventListener;
 
@@ -16,8 +16,8 @@ public abstract class BaseContextEventListener implements ContextEventListener {
 
     public abstract void onResourceRemoved(ResourceRemovedEvent rre);
 
-    public abstract void onResourceInstanceAdded(ResourceInstanceAddedEvent riae);
+    public abstract void onResourceInstanceAdded(ModelInstanceAddedEvent riae);
 
-    public abstract void onResourceInstanceRemoved(ResourceInstanceRemovedEvent rire);
+    public abstract void onResourceInstanceRemoved(ModelInstanceRemovedEvent rire);
 
 }

@@ -1,20 +1,19 @@
 package org.contextual.api.tests.mocks;
 
-import org.contextual.api.Resource;
-import org.contextual.api.ResourceType;
-
-import java.util.UUID;
+import org.contextual.api.Model;
+import org.contextual.api.ModelType;
+import org.contextual.api.utils.IdGenerator;
 
 /**
  * Created by msalatino on 21/02/2017.
  */
-public class MockResourceA implements Resource {
-    public static final ResourceTypeA TYPE_INSTANCE = new ResourceTypeA();
+public class MockModelA implements Model {
+    public static final ModelTypeA TYPE_INSTANCE = new ModelTypeA();
     private String id;
     private String name;
 
-    public MockResourceA(String name) {
-        this.id = UUID.randomUUID().toString();
+    public MockModelA(String name) {
+        this.id = IdGenerator.generateIdForEntity("mock-model-a");
         this.name = name;
     }
 
@@ -34,15 +33,15 @@ public class MockResourceA implements Resource {
     }
 
     @Override
-    public ResourceType getResourceType() {
+    public ModelType getModelType() {
         return TYPE_INSTANCE;
     }
 
-    public static class ResourceTypeA implements ResourceType{
+    public static class ModelTypeA implements ModelType {
 
         @Override
         public String getName() {
-            return "ResourceTypeA";
+            return "ModelTypeA";
         }
     }
 }

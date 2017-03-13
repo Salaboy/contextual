@@ -1,7 +1,6 @@
 package org.contextual.api.listeners;
 
 import org.contextual.api.EventListener;
-import org.contextual.api.ResourceInstance;
 import org.contextual.api.events.*;
 
 /**
@@ -12,7 +11,7 @@ public interface ContextEventListener extends EventListener {
 
     void onResourceRemoved(ResourceRemovedEvent rre);
 
-    void onResourceInstanceAdded(ResourceInstanceAddedEvent rae);
+    void onResourceInstanceAdded(ModelInstanceAddedEvent rae);
 
-    void onResourceInstanceRemoved(ResourceInstanceRemovedEvent rre);
+    void onResourceInstanceRemoved(ModelInstanceRemovedEvent rre);
 }

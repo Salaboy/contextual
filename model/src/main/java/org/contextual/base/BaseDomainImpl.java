@@ -1,13 +1,15 @@
 package org.contextual.base;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.contextual.api.Context;
 import org.contextual.api.Domain;
-import org.contextual.api.ResourceType;
+import org.contextual.api.ModelType;
 import org.contextual.api.events.ContextDestroyedEvent;
 import org.contextual.api.events.ContextRegisteredEvent;
 import org.contextual.api.listeners.DomainEventListener;
 import org.contextual.api.services.ServiceType;
+import org.contextual.api.utils.IdGenerator;
 
 import java.util.*;
 
@@ -19,16 +21,17 @@ public class BaseDomainImpl implements Domain {
 
     private String id;
     private String name;
-    private List<ResourceType> supportedResourceTypes = new ArrayList<>();
+    private List<ModelType> supportedModelTypes = new ArrayList<>();
     private List<ServiceType> supportedServiceTypes = new ArrayList<>();
 
     // @TODO: evaluate hazelcast for eviction maps and cluster/distributed sync
+    @JsonIgnore
     private Map<String, Context> contexts = new HashMap<>();
     private List<DomainEventListener> listeners = new ArrayList<>();
 
 
     public BaseDomainImpl(String name) {
-        this.id = UUID.randomUUID().toString();
+        this.id = IdGenerator.generateIdForEntity("domain");
         this.name = name;
     }
 
@@ -94,14 +97,13 @@ public class BaseDomainImpl implements Domain {
         listeners.clear();
     }
 
-    @Override
-    public List<ResourceType> getSupportedResourceTypes() {
-        return supportedResourceTypes;
+    public List<ModelType> getSupportedModelTypes() {
+        return supportedModelTypes;
     }
 
     @Override
-    public void addSupportedResourceType(ResourceType type){
-        supportedResourceTypes.add(type);
+    public void addSupportedResourceType(ModelType type){
+        supportedModelTypes.add(type);
     }
 
     @Override

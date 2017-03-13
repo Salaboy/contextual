@@ -32,6 +32,7 @@ public class ContextResource extends ResourceSupport {
     public void setContextName(String contextName) {
         this.contextName = contextName;
     }
-    // links to domain, services, resources, commands (???)
+
+    // links to domain, services, resources, resources-instances, commands
 
 }
